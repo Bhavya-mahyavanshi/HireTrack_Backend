@@ -1,4 +1,4 @@
-package com.HireTrack.config;
+package com.HireTrack.security;
 
 
 import com.HireTrack.config.JwtConfig;
