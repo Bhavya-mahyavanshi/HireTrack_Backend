@@ -1,4 +1,4 @@
-package com.HireTrack.config;
+package com.hiretrack.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

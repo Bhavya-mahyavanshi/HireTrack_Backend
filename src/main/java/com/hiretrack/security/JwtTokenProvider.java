@@ -1,7 +1,7 @@
-package com.HireTrack.security;
+package com.hiretrack.security;
 
 
-import com.HireTrack.config.JwtConfig;
+import com.hiretrack.config.JwtConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

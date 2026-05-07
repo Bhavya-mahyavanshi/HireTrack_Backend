@@ -1,4 +1,4 @@
-package com.HireTrack.security;
+package com.hiretrack.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
