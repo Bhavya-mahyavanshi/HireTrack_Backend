@@ -1,391 +1,494 @@
-# HireTrack — Backend
+<div align="center">
 
-> REST API for a Canadian job application intelligence platform. Built with Spring Boot 4, Spring Security, and JJWT — featuring stateless JWT authentication, a web scraping engine (Jsoup), automated email reminders, and a skill-gap analysis algorithm.
+# 🎯 HireTrack
 
----
+### Canadian Job Application Intelligence Platform
 
-## What this is
+[![Backend CI](https://img.shields.io/github/actions/workflow/status/Bhavya-mahyavanshi/hiretrack-backend/ci.yml?label=Backend%20CI&style=flat-square&logo=github)](https://github.com/Bhavya-mahyavanshi/hiretrack-backend)
+[![Frontend CI](https://img.shields.io/github/actions/workflow/status/Bhavya-mahyavanshi/hiretrack-frontend/ci.yml?label=Frontend%20CI&style=flat-square&logo=github)](https://github.com/Bhavya-mahyavanshi/hiretrack-frontend)
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-HireTrack is a full-stack job tracking application designed for the Canadian job market. This repository is the backend: a Spring Boot REST API that handles authentication, job data extraction from any posting URL, skill-match scoring, application pipeline management, and scheduled follow-up email reminders.
+<br/>
 
-The frontend (Next.js 15 + React 19) lives in a separate repository and communicates with this API exclusively over HTTP using JWT tokens.
+> **Stop tracking job applications in spreadsheets.**
+> Paste any job URL → HireTrack auto-extracts the role, company, salary, and required skills,
+> scores your match percentage, and reminds you when to follow up.
 
-**Current build status:** Authentication layer complete and functional — `User` entity, `UserRepository`, `JwtConfig`, `JwtTokenProvider`, `JwtAuthFilter`, and `UserDetailsServiceImpl` are all implemented. Remaining layers (scraper, skill matcher, application CRUD, dashboard, email scheduler) are actively in development following a 4-week build plan.
+<br/>
 
----
+**[🚀 Live Demo](https://hiretrack.vercel.app)** &nbsp;·&nbsp;
+**[📖 API Docs (Swagger)](https://hiretrack-api.render.com/swagger-ui.html)** &nbsp;·&nbsp;
+**[🐛 Report a Bug](https://github.com/Bhavya-mahyavanshi/hiretrack-backend/issues)** &nbsp;·&nbsp;
+**[💡 Request a Feature](https://github.com/Bhavya-mahyavanshi/hiretrack-backend/issues)**
 
-## Features (completed ✅ / in progress 🔨)
+<br/>
 
-**Authentication & Security** ✅
-- User registration with BCrypt password hashing
-- JWT login — 24-hour tokens signed with HMAC-SHA256
-- `JwtAuthFilter` intercepts every request, validates the token, and loads the authenticated user into Spring's `SecurityContextHolder`
-- Stateless session — no cookies, no server-side sessions
-- Public routes (`/api/auth/**`) whitelisted; all other routes require a valid Bearer token
+![HireTrack Dashboard Screenshot](https://placehold.co/900x480/0A0F2C/00D4FF?text=Dashboard+Screenshot+Here)
 
-**Job Scraper** 🔨
-- Paste any job posting URL → Jsoup fetches and parses the raw HTML
-- Extracts: title, company, location, description, salary range (regex), required skills (keyword matching against a curated tech skill dictionary)
-- Deduplication: checks `jobs` table by URL before hitting the network — never scrapes the same page twice
-
-**Skill Gap Analysis** 🔨
-- Compares the user's declared skill profile against a job's extracted required skills
-- Set intersection algorithm: `userSkills.retainAll(requiredSkills)` for matched, `requiredSkills.removeAll(userSkills)` for missing
-- Outputs a 0–100 match score: `(matched.size() / required.size()) * 100`, credit-weighted
-- Saved to `skill_matches` table and returned with every application response
-
-**Application Pipeline** 🔨
-- 8-stage pipeline: `SAVED → APPLIED → PHONE_SCREEN → TECHNICAL → FINAL_ROUND → OFFER → REJECTED / WITHDRAWN`
-- Full CRUD with ownership verification — users can only modify their own applications
-- `resumeVersion` field tracks which resume variant was sent for each application
-
-**Dashboard & Analytics** 🔨
-- Aggregate counts per pipeline stage
-- Upcoming follow-ups: applications with `followUpDate` within the next 7 days
-
-**Scheduled Email Reminders** 🔨
-- `@Scheduled` cron job fires daily at 9:00 AM
-- Queries all applications with `followUpDate` before today + 1
-- Sends personalised follow-up reminder emails via Gmail SMTP (JavaMail)
-
-**API Documentation** 🔨
-- SpringDoc OpenAPI auto-generates Swagger UI at `/swagger-ui.html` from controller annotations — zero manual documentation
+</div>
 
 ---
 
-## Architecture
+## 📋 Table of Contents
 
-HireTrack is a decoupled full-stack application. The frontend and backend are separate GitHub repositories, deployed independently, and communicate only through this REST API.
-
-```
-Next.js Frontend (Vercel)
-        │
-        │  HTTPS + JWT Bearer token
-        ▼
-Spring Boot API (Render.com · port 8080)
-        │
-        ├── JwtAuthFilter          Validates token on every request
-        ├── Controller layer       Thin — receives request, calls service, returns ResponseEntity
-        ├── Service layer          All business logic lives here
-        ├── Repository layer       JpaRepository — Spring generates SQL from method names
-        │
-        ▼
-MySQL 8 Database (port 3306)
-```
-
-**Request lifecycle:**
-```
-HTTP request → JwtAuthFilter → Controller → Service → Repository → MySQL
-                                                                      ↓
-HTTP response ← Controller ← ResponseEntity ← DTO mapping ← Entity ←┘
-```
+- [Why HireTrack](#-why-hiretrack)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Project Structure](#-project-structure)
+- [Running Tests](#-running-tests)
+- [Deployment](#-deployment)
+- [Roadmap](#-roadmap)
+- [Author](#-author)
 
 ---
 
-## Project structure
+## 💡 Why HireTrack
 
-```
-src/main/java/com/hiretrack/
-│
-├── HiretrackApplication.java          @SpringBootApplication entry point
-│
-├── config/
-│   ├── JwtConfig.java                 Reads jwt.secret + jwt.expiration from application.properties
-│   ├── SecurityConfig.java            Filter chain — permits /api/auth/**, requires auth elsewhere, STATELESS session
-│   └── CorsConfig.java                Allows localhost:3000 and Vercel frontend to call the API
-│
-├── model/                             JPA @Entity classes — Hibernate auto-creates tables
-│   ├── User.java                      ✅ implements UserDetails — email as principal, BCrypt password
-│   ├── Job.java                       Scraped job data: url, title, company, salary, requiredSkills
-│   ├── JobApplication.java            Links User ↔ Job with status, dates, notes, resumeVersion
-│   ├── ApplicationStatus.java         Enum: SAVED|APPLIED|PHONE_SCREEN|TECHNICAL|FINAL_ROUND|OFFER|REJECTED|WITHDRAWN
-│   ├── SkillMatch.java                Algorithm result: matchScore, matchedSkills, missingSkills
-│   └── UserSkill.java                 User's declared skills with Proficiency enum (BEGINNER|INTERMEDIATE|ADVANCED)
-│
-├── dto/                               Data Transfer Objects — never expose raw @Entity over HTTP
-│   ├── request/                       LoginRequest, RegisterRequest, ApplicationRequest, ScrapeRequest, SkillRequest
-│   └── response/                      AuthResponse, ApplicationResponse, JobResponse, SkillMatchResponse, DashboardResponse
-│
-├── repository/                        JpaRepository interfaces — Spring generates all SQL
-│   ├── UserRepository.java            ✅ findByEmail(), existsByEmail()
-│   ├── ApplicationRepository.java     findByUser(), findByUserAndStatus(), findByFollowUpDateBefore(), countByUserAndStatus()
-│   ├── JobRepository.java             findByUrl() — deduplication check before scraping
-│   ├── SkillRepository.java           findByUser(), findByUserAndSkillNameIgnoreCase()
-│   └── SkillMatchRepository.java      findByApplication()
-│
-├── service/
-│   ├── AuthService.java               register() → BCrypt + save + JWT · login() → authenticate + JWT
-│   ├── ApplicationService.java        CRUD with ownership verification via user ID check
-│   ├── JobScraperService.java         Jsoup scraper + extractSkills() keyword matcher + extractSalary() regex
-│   ├── SkillMatcherService.java       Set intersection algorithm → 0–100 match score
-│   ├── EmailReminderService.java      JavaMailSender → personalised follow-up emails
-│   └── DashboardService.java          Aggregates counts, upcoming follow-ups → DashboardResponse
-│
-├── controller/                        @RestController — thin, delegates to services
-│   ├── AuthController.java            POST /api/auth/register · POST /api/auth/login
-│   ├── ApplicationController.java     GET|POST|PUT|DELETE /api/applications · /api/applications/{id}
-│   ├── JobController.java             POST /api/jobs/scrape · GET /api/jobs/{id}
-│   ├── SkillController.java           GET|POST|DELETE /api/skills · POST /api/skills/match/{appId}
-│   └── DashboardController.java       GET /api/dashboard/stats · /funnel · /upcoming
-│
-├── security/
-│   ├── JwtTokenProvider.java          ✅ generateToken() · validateToken() · getEmailFromToken() — JJWT 0.13
-│   ├── JwtAuthFilter.java             ✅ OncePerRequestFilter — extracts Bearer token, validates, sets SecurityContext
-│   └── UserDetailsServiceImpl.java    ✅ loadUserByUsername(email) → UserRepository lookup
-│
-├── exception/
-│   ├── GlobalExceptionHandler.java    @RestControllerAdvice — returns JSON errors for 400/403/404/500
-│   ├── ResourceNotFoundException.java Custom 404
-│   └── UnauthorizedException.java     Custom 403
-│
-└── scheduler/
-    └── ReminderScheduler.java         @Scheduled(cron) — fires daily at 9:00 AM, calls EmailReminderService
-```
+I built HireTrack because I was living the problem.
+
+Applying to 50+ jobs across Toronto while studying full-time meant juggling spreadsheets, browser tabs, sticky notes, and missed follow-ups. Every existing solution was either bloated, US-focused, or missing the features that actually matter.
+
+So I built the tool I wished existed — and built it with the exact stack Canadian employers are hiring for.
+
+**The result:** a full-stack production application demonstrating end-to-end Java/Spring Boot backend development, REST API design, JWT authentication, web scraping, automated scheduling, and a modern React frontend — deployed and live.
 
 ---
 
-## Tech stack
+## ✨ Features
 
-| Layer | Technology | Version |
+### 🔍 Smart Job Scraping
+Paste any job posting URL from LinkedIn, Indeed, or a company careers page. HireTrack automatically extracts the job title, company, location, salary range, and required skills — no manual data entry.
+
+### 📊 Skill Gap Analysis
+Every application gets a **match score (0–100%)** calculated by comparing the job's required skills against your personal skill profile. See exactly which skills you have and which ones are missing — so you know where to focus your learning.
+
+### 🗂️ Pipeline Tracking
+Track every application through **8 pipeline stages**:
+`Saved → Applied → Phone Screen → Technical → Final Round → Offer → Rejected → Withdrawn`
+
+### 📈 Analytics Dashboard
+A real-time dashboard showing your application funnel, stage breakdown, weekly activity, and upcoming follow-up deadlines — all in one view.
+
+### ⏰ Automated Email Reminders
+Set a follow-up date on any application. HireTrack's Spring `@Scheduled` job runs every morning at 9AM and sends you a reminder email for any applications due that day — so no opportunity falls through the cracks.
+
+### 🔐 Secure Authentication
+JWT-based authentication with BCrypt password hashing. Stateless, scalable, and following industry security standards.
+
+### 📄 Swagger API Documentation
+Full auto-generated API documentation available at `/swagger-ui.html` — every endpoint documented, testable in the browser.
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+| Technology | Version | Purpose |
 |---|---|---|
-| Framework | Spring Boot | 4.0.6 |
-| Language | Java | 25 |
-| Security | Spring Security | 4.1.0 |
-| Authentication | JJWT (HMAC-SHA256) | 0.13.0 |
-| Database | MySQL 8 + Spring Data JPA / Hibernate | 9.7.0 (connector) |
-| Web scraping | Jsoup | 1.22.2 |
-| Email | Spring Mail (JavaMail / Gmail SMTP) | 4.1.0 |
-| API docs | SpringDoc OpenAPI (Swagger UI) | 3.0.3 |
-| Boilerplate reduction | Lombok | 1.18.46 |
-| Entity ↔ DTO mapping | ModelMapper | 3.2.6 |
-| String utilities | Apache Commons Lang | 3.20.0 |
-| Testing | JUnit 5 + Mockito + Spring Test | — |
-| Test DB | H2 in-memory | 2.4.240 |
-| Build | Maven | — |
-| Deployment | Render.com | — |
+| Java | 17 | Core language |
+| Spring Boot | 3.2 | REST API framework |
+| Spring Security | 6 | Authentication & authorization |
+| JSON Web Token (JWT) | 0.12.3 | Stateless token-based auth |
+| Spring Data JPA | 3.2 | ORM & repository pattern |
+| Hibernate | 6 | Database persistence layer |
+| MySQL | 8.0 | Relational database |
+| Jsoup | 1.17.2 | HTML parsing & job scraping |
+| JavaMail (Spring Mail) | 3.2 | Automated email reminders |
+| SpringDoc OpenAPI | 2.3 | Swagger UI auto-generation |
+| JUnit 5 + Mockito | — | Unit & integration testing |
+| Maven | 3.9 | Build & dependency management |
+
+### Frontend
+| Technology | Version | Purpose |
+|---|---|---|
+| Next.js | 15 | React framework with file routing |
+| React | 19 | Component-based UI |
+| Jotai | 2 | Global state management |
+| SWR | 2 | Data fetching with caching |
+| Axios | 1.7 | HTTP client with interceptors |
+| Chart.js | 4 | Pipeline funnel visualization |
+| Tailwind CSS | 3 | Utility-first styling |
+
+### DevOps & Infrastructure
+| Technology | Purpose |
+|---|---|
+| GitHub Actions | CI/CD — auto-test on every push |
+| Vercel | Frontend deployment |
+| Render.com | Backend API deployment |
+| Docker | Containerization (coming in v2) |
 
 ---
 
-## Database schema
+## 🏗 Architecture
 
-Five tables — auto-created by Hibernate on startup via `ddl-auto=update`. No SQL scripts to run.
+HireTrack is a **fully decoupled full-stack application**. The frontend and backend are separate repositories, communicate only via REST API, and deploy independently.
 
 ```
-users
-├── id            BIGINT PK AUTO_INCREMENT
-├── name          VARCHAR(100) NOT NULL
-├── email         VARCHAR(100) NOT NULL UNIQUE
-├── password      VARCHAR(255) NOT NULL  ← BCrypt hash
-└── created_at    TIMESTAMP
+┌─────────────────────────────────────────────────────────────┐
+│                     CLIENT LAYER                            │
+│              Next.js 15 + React 19 (Vercel)                 │
+│         Jotai State │ SWR Fetching │ Axios HTTP             │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ HTTPS / REST (JSON)
+                           │ Authorization: Bearer <JWT>
+┌──────────────────────────▼──────────────────────────────────┐
+│                     API LAYER                               │
+│           Spring Boot 3 REST API (Render.com)               │
+│                                                             │
+│  JwtAuthFilter → Controller → Service → Repository          │
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  Auth Service│  │ Scraper      │  │ Skill Matcher    │  │
+│  │  JWT + BCrypt│  │ Service      │  │ Service          │  │
+│  │              │  │ Jsoup        │  │ Gap Algorithm    │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  @Scheduled Reminder Scheduler (9AM daily)           │   │
+│  │  Spring Mail → Gmail SMTP → User Inbox               │   │
+│  └──────────────────────────────────────────────────────┘   │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ JPA / Hibernate
+┌──────────────────────────▼──────────────────────────────────┐
+│                   DATA LAYER                                │
+│                  MySQL 8.0 Database                         │
+│   users │ jobs │ job_applications │ user_skills │ skill_matches │
+└─────────────────────────────────────────────────────────────┘
+```
 
-jobs
-├── id            BIGINT PK AUTO_INCREMENT
-├── url           TEXT NOT NULL          ← deduplication key
-├── title         VARCHAR(200)
-├── company       VARCHAR(200)
-├── location      VARCHAR(200)
-├── salary_min    INT NULLABLE
-├── salary_max    INT NULLABLE
-├── description   TEXT
-├── required_skills TEXT                 ← comma-separated, extracted by Jsoup
-└── scraped_at    TIMESTAMP
-
-job_applications
-├── id            BIGINT PK AUTO_INCREMENT
-├── user_id       BIGINT FK → users.id
-├── job_id        BIGINT FK → jobs.id
-├── status        ENUM (8 stages)
-├── applied_date  DATE
-├── follow_up_date DATE                  ← triggers email reminder
-├── notes         TEXT
-├── resume_version VARCHAR(100)
-├── created_at    TIMESTAMP
-└── updated_at    TIMESTAMP ON UPDATE
-
-user_skills
-├── id            BIGINT PK AUTO_INCREMENT
-├── user_id       BIGINT FK → users.id
-├── skill_name    VARCHAR(100)
-└── proficiency   ENUM (BEGINNER|INTERMEDIATE|ADVANCED)
-
-skill_matches
-├── id            BIGINT PK AUTO_INCREMENT
-├── application_id BIGINT FK → job_applications.id UNIQUE
-├── match_score   INT (0–100)
-├── matched_skills TEXT                  ← comma-separated
-├── missing_skills TEXT                  ← comma-separated
-└── calculated_at  TIMESTAMP
+### Request Lifecycle
+```
+User action in browser
+  → Axios adds JWT to Authorization header automatically
+    → Spring JwtAuthFilter validates token on every request
+      → Controller receives clean, authenticated request
+        → Service executes business logic
+          → JPA Repository queries MySQL
+            → JSON response travels back to React component
+              → SWR caches the response for performance
 ```
 
 ---
 
-## REST API endpoints
+## 🚀 Getting Started
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | Public | Register new user, returns JWT |
-| POST | `/api/auth/login` | Public | Login, returns JWT |
-| GET | `/api/applications` | JWT | Get all applications for current user |
-| POST | `/api/applications` | JWT | Create new application |
-| GET | `/api/applications/{id}` | JWT | Get single application |
-| PUT | `/api/applications/{id}` | JWT | Update status / notes |
-| DELETE | `/api/applications/{id}` | JWT | Delete application (ownership verified) |
-| POST | `/api/jobs/scrape` | JWT | Scrape job URL, returns extracted Job |
-| GET | `/api/jobs/{id}` | JWT | Get job by ID |
-| GET | `/api/skills` | JWT | Get user's skill profile |
-| POST | `/api/skills` | JWT | Add a skill |
-| DELETE | `/api/skills/{id}` | JWT | Remove a skill |
-| POST | `/api/skills/match/{appId}` | JWT | Run skill-match algorithm for an application |
-| GET | `/api/dashboard/stats` | JWT | Aggregate counts + upcoming follow-ups |
-| GET | `/api/dashboard/funnel` | JWT | Per-stage counts for pipeline chart |
-| GET | `/api/dashboard/upcoming` | JWT | Applications with follow-up due within 7 days |
+### Prerequisites
 
-Full interactive documentation available at `/swagger-ui.html` once the server is running.
+Make sure you have the following installed:
+
+| Tool | Version | Download |
+|---|---|---|
+| Java JDK | 17+ | [adoptium.net](https://adoptium.net/) |
+| Maven | 3.9+ | [maven.apache.org](https://maven.apache.org/) |
+| Node.js | 18+ | [nodejs.org](https://nodejs.org/) |
+| MySQL | 8.0+ | [mysql.com](https://www.mysql.com/) |
+| Git | Latest | [git-scm.com](https://git-scm.com/) |
 
 ---
 
-## Getting started
+### Backend Setup
 
-**Prerequisites:** Java 21+, Maven 3+, MySQL 8+
-
+**1. Clone the repository**
 ```bash
-# 1. Clone
-git clone https://github.com/Bhavya-mahyavanshi/HireTrack_Backend.git
-cd HireTrack_Backend
-
-# 2. Create the database
-mysql -u root -p -e "CREATE DATABASE hiretrack_db;"
-
-# 3. Configure environment
-cp src/main/resources/application.properties.example src/main/resources/application.properties
-# Edit application.properties — fill in DB password, JWT secret, Gmail credentials
-
-# 4. Run
-./mvnw spring-boot:run
-# → API running at http://localhost:8080
-# → Swagger UI at http://localhost:8080/swagger-ui.html
+git clone https://github.com/Bhavya-mahyavanshi/hiretrack-backend.git
+cd hiretrack-backend
 ```
 
-**application.properties values you must set:**
+**2. Create the MySQL database**
+```sql
+CREATE DATABASE hiretrack_db;
+```
 
+**3. Configure application properties**
+
+Edit `src/main/resources/application.properties`:
 ```properties
+# Database
+spring.datasource.url=jdbc:mysql://localhost:3306/hiretrack_db
+spring.datasource.username=your_mysql_username
 spring.datasource.password=your_mysql_password
 
-# Generate with: openssl rand -base64 32
-jwt.secret=your_base64_encoded_secret_min_32_chars
+# JWT — use a strong random string, minimum 32 characters
+jwt.secret=your_super_secret_key_minimum_256_bits_long_here
+jwt.expiration=86400000
 
+# Gmail SMTP (create an App Password at myaccount.google.com/apppasswords)
 spring.mail.username=your_gmail@gmail.com
-spring.mail.password=your_16_char_app_password   # Gmail App Password, not your login password
+spring.mail.password=your_16_char_app_password
+```
+
+**4. Run the application**
+```bash
+mvn spring-boot:run
+```
+
+Backend runs at: `http://localhost:8080`
+Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+---
+
+### Frontend Setup
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/Bhavya-mahyavanshi/hiretrack-frontend.git
+cd hiretrack-frontend
+```
+
+**2. Install dependencies**
+```bash
+npm install
+```
+
+**3. Configure environment**
+```bash
+# Create .env.local in the project root
+echo "NEXT_PUBLIC_API_URL=http://localhost:8080" > .env.local
+```
+
+**4. Run the development server**
+```bash
+npm run dev
+```
+
+Frontend runs at: `http://localhost:3000`
+
+---
+
+## 📖 API Documentation
+
+Full interactive API documentation is auto-generated by SpringDoc OpenAPI.
+
+**Local:** `http://localhost:8080/swagger-ui.html`
+**Production:** `https://hiretrack-api.render.com/swagger-ui.html`
+
+### Core Endpoints
+
+```
+AUTH
+────────────────────────────────────────
+POST   /api/auth/register           Register new user
+POST   /api/auth/login              Login, receive JWT token
+
+APPLICATIONS                        All routes require: Authorization: Bearer <token>
+────────────────────────────────────────
+GET    /api/applications            Get all user's applications
+POST   /api/applications            Create new application
+GET    /api/applications/{id}       Get single application detail
+PUT    /api/applications/{id}       Update status, notes, follow-up date
+DELETE /api/applications/{id}       Delete application
+
+JOBS
+────────────────────────────────────────
+POST   /api/jobs/scrape             Scrape job data from URL
+GET    /api/jobs/{id}               Get scraped job details
+
+SKILLS
+────────────────────────────────────────
+GET    /api/skills                  Get user's skill profile
+POST   /api/skills                  Add a skill
+DELETE /api/skills/{id}             Remove a skill
+POST   /api/skills/match/{appId}    Calculate skill match score
+
+DASHBOARD
+────────────────────────────────────────
+GET    /api/dashboard/stats         Application counts by status
+GET    /api/dashboard/funnel        Pipeline data for chart
+GET    /api/dashboard/upcoming      Follow-ups due this week
 ```
 
 ---
 
-## Running tests
+## 🗄 Database Schema
+
+```
+┌──────────────┐         ┌─────────────────────┐
+│    users     │         │   job_applications   │
+├──────────────┤    1    ├─────────────────────┤    1
+│ id (PK)      │────────<│ id (PK)             │────────┐
+│ name         │         │ user_id (FK)        │        │
+│ email        │         │ job_id (FK)         │        │
+│ password     │         │ status (ENUM)       │        │
+│ created_at   │         │ applied_date        │        │
+└──────────────┘         │ follow_up_date      │        │
+                         │ notes               │        │
+┌──────────────┐         │ resume_version      │        │
+│     jobs     │         │ created_at          │        │
+├──────────────┤    1    │ updated_at          │        │
+│ id (PK)      │────────<└─────────────────────┘        │
+│ url          │                                        │ 1
+│ title        │         ┌──────────────────┐           │
+│ company      │         │  skill_matches   │           │
+│ location     │         ├──────────────────┤           │
+│ salary_min   │         │ id (PK)          │           │
+│ salary_max   │         │ application_id   │>──────────┘
+│ description  │         │ match_score      │
+│ req_skills   │         │ matched_skills   │
+│ scraped_at   │         │ missing_skills   │
+└──────────────┘         │ calculated_at    │
+                         └──────────────────┘
+┌──────────────┐
+│  user_skills │
+├──────────────┤
+│ id (PK)      │
+│ user_id (FK) │
+│ skill_name   │
+│ proficiency  │
+└──────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+### Backend
+```
+hiretrack-backend/
+├── .github/workflows/ci.yml           # GitHub Actions CI pipeline
+├── src/main/java/com/hiretrack/
+│   ├── HiretrackApplication.java      # Entry point
+│   ├── config/
+│   │   ├── SecurityConfig.java        # Spring Security + filter chain
+│   │   ├── JwtConfig.java             # JWT settings from properties
+│   │   └── CorsConfig.java            # Allow frontend origin
+│   ├── controller/                    # REST endpoints (thin layer)
+│   ├── service/                       # Business logic
+│   │   ├── JobScraperService.java     # Jsoup web scraping
+│   │   ├── SkillMatcherService.java   # Match scoring algorithm
+│   │   └── EmailReminderService.java  # Scheduled email sender
+│   ├── repository/                    # JPA data access layer
+│   ├── model/                         # JPA entities
+│   ├── dto/                           # Request & Response objects
+│   ├── security/                      # JWT filter & provider
+│   ├── exception/                     # Global error handling
+│   └── scheduler/                     # @Scheduled tasks
+├── src/test/                          # JUnit 5 + Mockito tests
+└── pom.xml                            # Maven dependencies
+```
+
+### Frontend
+```
+hiretrack-frontend/
+├── .github/workflows/ci.yml           # GitHub Actions CI pipeline
+├── src/
+│   ├── components/                    # Reusable React components
+│   │   ├── dashboard/                 # StatsCard, FunnelChart
+│   │   ├── applications/              # Table, Card, Form, StatusBadge
+│   │   ├── skills/                    # SkillMatchScore, MissingSkills
+│   │   └── ui/                        # Button, Modal, Input, Loader
+│   ├── pages/                         # Next.js file-based routes
+│   │   ├── index.jsx                  # Landing page
+│   │   ├── dashboard.jsx              # Main hub
+│   │   ├── applications/              # List, New, [id] detail
+│   │   └── skills.jsx                 # Skills profile
+│   ├── hooks/                         # Custom SWR data hooks
+│   ├── lib/                           # Axios instance, auth helpers
+│   └── store/                         # Jotai global state atoms
+└── package.json
+```
+
+---
+
+## 🧪 Running Tests
 
 ```bash
-./mvnw test
+# Run all tests
+mvn test
+
+# Run a specific test class
+mvn test -Dtest=SkillMatcherServiceTest
+
+# Run with coverage report (generates in target/site/jacoco)
+mvn test jacoco:report
 ```
 
-Tests use H2 in-memory database — no MySQL connection required. `@WithMockUser` from Spring Security Test is used to simulate authenticated requests on secured endpoints.
+Tests cover:
+- `SkillMatcherServiceTest` — match score calculation accuracy
+- `ApplicationServiceTest` — CRUD operations and ownership validation
+- `AuthServiceTest` — registration, login, duplicate email handling
+- `ApplicationControllerTest` — endpoint security and response shapes
 
 ---
 
-## JWT authentication flow
+## 🌐 Deployment
 
-```
-POST /api/auth/register  { name, email, password }
-        ↓
-AuthService hashes password with BCrypt
-        ↓
-User saved to MySQL
-        ↓
-JwtTokenProvider.generateToken(email) → signed HMAC-SHA256 JWT (24h expiry)
-        ↓
-{ token: "eyJ...", type: "Bearer", email, name }
+### Backend → Render.com
 
-─────────────────────────────────────────────────
+1. Push your backend repo to GitHub
+2. Go to [render.com](https://render.com) → New Web Service → Connect repo
+3. Set build command: `mvn clean install -DskipTests`
+4. Set start command: `java -jar target/hiretrack-0.0.1-SNAPSHOT.jar`
+5. Add environment variables (same as application.properties)
+6. Deploy — Render provides a free public URL
 
-Subsequent request: Authorization: Bearer eyJ...
-        ↓
-JwtAuthFilter.extractToken()  →  authHeader.substring(7)
-        ↓
-JwtTokenProvider.validateToken()  →  parse + verify signature
-        ↓
-JwtTokenProvider.getEmailFromToken()  →  claims.getSubject()
-        ↓
-UserDetailsServiceImpl.loadUserByUsername(email)  →  DB lookup
-        ↓
-SecurityContextHolder.getContext().setAuthentication(...)
-        ↓
-Controller receives authenticated request
-```
+### Frontend → Vercel
+
+1. Push your frontend repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import repo
+3. Add environment variable: `NEXT_PUBLIC_API_URL=https://your-render-url.render.com`
+4. Deploy — Vercel provides a free public URL instantly
+
+### CI/CD Pipeline
+
+Both repos include a GitHub Actions workflow that:
+- Triggers on every push to `main` and every pull request
+- Runs the full test suite automatically
+- Blocks merges if tests fail
 
 ---
 
-## Skill match algorithm
+## 🗺 Roadmap
 
-The core feature that differentiates HireTrack from a spreadsheet tracker.
-
-```java
-// 1. Load user's declared skills → Set<String> (lowercase)
-Set<String> userSkills = skillRepository.findByUser(user)
-    .stream()
-    .map(s -> s.getSkillName().toLowerCase())
-    .collect(Collectors.toSet());
-
-// 2. Load job's required skills → Set<String> (split from comma-separated string)
-Set<String> requiredSkills = Arrays.stream(
-    job.getRequiredSkills().split(","))
-    .map(String::trim)
-    .map(String::toLowerCase)
-    .collect(Collectors.toSet());
-
-// 3. Intersection = matched
-Set<String> matched = new HashSet<>(userSkills);
-matched.retainAll(requiredSkills);
-
-// 4. Difference = missing
-Set<String> missing = new HashSet<>(requiredSkills);
-missing.removeAll(userSkills);
-
-// 5. Score
-int score = (int) ((matched.size() / (double) requiredSkills.size()) * 100);
-```
-
-Result is persisted in `skill_matches` and returned with every `ApplicationResponse` so the frontend can display it without an extra round-trip.
+- [x] JWT Authentication (register / login / logout)
+- [x] Job URL scraping with Jsoup
+- [x] Skill gap analysis and match scoring
+- [x] Application pipeline with 8 stages
+- [x] Analytics dashboard
+- [x] Automated email reminders via Spring Scheduler
+- [x] Swagger API documentation
+- [x] GitHub Actions CI/CD
+- [ ] Resume version upload and storage (AWS S3)
+- [ ] Browser extension — scrape job directly from LinkedIn page
+- [ ] AI-powered resume tailoring suggestions (OpenAI API)
+- [ ] Interview notes and rating system
+- [ ] Export applications to CSV / PDF
+- [ ] Docker + docker-compose for one-command local setup
+- [ ] Mobile responsive PWA
 
 ---
 
-## Deployment
+## 👨‍💻 Author
 
-**Backend → Render.com**
+<div align="center">
 
-1. Connect the GitHub repository in Render dashboard
-2. Build command: `./mvnw clean package -DskipTests`
-3. Start command: `java -jar target/demo-0.0.1-SNAPSHOT.jar`
-4. Set environment variables in Render dashboard (never commit secrets):
-   - `SPRING_DATASOURCE_URL`
-   - `SPRING_DATASOURCE_PASSWORD`
-   - `JWT_SECRET`
-   - `SPRING_MAIL_PASSWORD`
+**Bhavya Mahyavanshi**
 
-**Frontend → Vercel** (separate repo)
+*Java Full-Stack Developer · Seneca Polytechnic · GPA 3.8*
 
-Set `NEXT_PUBLIC_API_URL=https://your-app.onrender.com` in Vercel project settings.
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/bhavya-mahyavanshi)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-0A0F2C?style=for-the-badge&logo=vercel&logoColor=white)](https://bhavya-mahyavanshi.vercel.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Bhavya-mahyavanshi)
+[![Email](https://img.shields.io/badge/Email-Contact-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:your@email.com)
+
+</div>
 
 ---
 
-## Related repository
+<div align="center">
 
-| Repo | Stack | Description |
-|---|---|---|
-| `HireTrack_Backend` (this repo) | Spring Boot · MySQL · JWT | REST API |
-| `hiretrack-frontend` *(coming)* | Next.js 15 · Jotai · SWR · Tailwind | Web UI |
+**Built with Java, Spring Boot, Next.js, and the determination to solve a real problem.**
 
----
+If HireTrack helped you or you found it interesting — a ⭐ on GitHub means a lot.
 
-## Author
-
-**Bhavya Mahyavanshi** · Java Full-Stack Developer
-
-[LinkedIn](https://linkedin.com/in/bhavya-mahyavanshi) · [GitHub](https://github.com/Bhavya-mahyavanshi) · [Portfolio](https://bhavya-mahyavanshi.vercel.app)
+</div>
