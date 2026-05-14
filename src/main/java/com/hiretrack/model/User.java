@@ -1,4 +1,4 @@
-package com.hiretrack.model;
+package com.HireTrack.model;
 
 import jakarta.persistence.*;
 import lombok.*;

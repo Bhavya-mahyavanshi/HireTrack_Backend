@@ -1,6 +1,6 @@
-package com.hiretrack.security;
+package com.HireTrack.security;
 
-import com.hiretrack.repository.UserRepository;
+import com.HireTrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
