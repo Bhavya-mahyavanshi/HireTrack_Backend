@@ -1,6 +1,5 @@
 package com.HireTrack.model;
 
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties.Apiversion.Use;
 
 import jakarta.persistence.*;
 import lombok.*;
