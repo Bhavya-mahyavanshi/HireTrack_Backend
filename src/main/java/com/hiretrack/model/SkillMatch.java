@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class SkillMatch {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "application_id", unique = true)

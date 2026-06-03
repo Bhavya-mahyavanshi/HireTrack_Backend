@@ -14,5 +14,5 @@ public interface SkillRepository extends JpaRepository<UserSkill, Long> {
 
     Optional<UserSkill> findByUserAndSkillNameIgnoreCase(User user, String skillName);
 
-    void dedeleteByUserAndSkillName(User user, String skillName);
+    void deleteByUserAndSkillName(User user, String skillName);
 } 

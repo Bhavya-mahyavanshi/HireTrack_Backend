@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class ApplicationService {
     
     private final ApplicationRepository applicationRepository;
-    private final JobRepository jonJobRepository;
+    private final JobRepository jobRepository;
     private final SkillMatcherService skillMatcherService;
 
     public List<ApplicationResponce> getAllApplication(User user) {
@@ -34,7 +34,7 @@ public class ApplicationService {
     }
 
     public ApplicationResponce createApplication(ApplicationRequest req, User user) {
-        Job job = jonJobRepository.findById(req.getJobId())
+        Job job = jobRepository.findById(req.getJobId())
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + req.getJobId()));
 
         JobApplication application = JobApplication.builder()

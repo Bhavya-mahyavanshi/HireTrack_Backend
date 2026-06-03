@@ -45,7 +45,7 @@ public class JobScraperService {
         Document doc;
         try {
             doc = Jsoup.connect(url)
-                    .userAgent("Mozzila/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .timeout(10000)
                     .get();
         } catch (IOException e) {
