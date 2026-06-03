@@ -143,7 +143,7 @@ public class JobScraperService {
         return doc.body() != null ? doc.body().text() : "";
     }
     
-    private String extractSkills(String text) {
+    String extractSkills(String text) {
         String lowerText = text.toLowerCase();
         List<String> found = new ArrayList<>();
         for (String keyword : TECH_KEYWORDS) {
