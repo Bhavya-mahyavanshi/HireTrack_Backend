@@ -1,6 +1,6 @@
 package com.HireTrack.service;
 
-import com.HireTrack.dto.response.ApplicationResponce;
+import com.HireTrack.dto.response.ApplicationResponse;
 import com.HireTrack.dto.response.DashboardResponse;
 import com.HireTrack.dto.response.StatusCount;
 import com.HireTrack.model.ApplicationStatus;
@@ -38,7 +38,7 @@ public class DashboardService {
                 .collect(Collectors.toList());
 
         LocalDate cutoff = LocalDate.now().plusDays(7);
-        List<ApplicationResponce> upcomingFollowUps = applicationRepository.findByFollowUpDateBefore(cutoff)
+        List<ApplicationResponse> upcomingFollowUps = applicationRepository.findByFollowUpDateBefore(cutoff)
                 .stream()
                 .filter(app -> app.getUser().getId().equals(user.getId()))
                 .filter(app -> app.getFollowUpDate() != null
@@ -65,7 +65,7 @@ public class DashboardService {
                 .collect(Collectors.toList());
     }
     
-    public List<ApplicationResponce> getUpcoming(User user) {
+    public List<ApplicationResponse> getUpcoming(User user) {
         LocalDate cutoff = LocalDate.now().plusDays(7);
         return applicationRepository.findByFollowUpDateBefore(cutoff)
                 .stream()
@@ -81,9 +81,9 @@ public class DashboardService {
         return c == null ? 0 : c.intValue();
     }
 
-    private ApplicationResponce toResponse(JobApplication app) {
+    private ApplicationResponse toResponse(JobApplication app) {
         Integer matchScore = app.getSkillMatch() != null ? app.getSkillMatch().getMatchScore() : null;
-        return ApplicationResponce.builder()
+        return ApplicationResponse.builder()
                 .id(app.getId())
                 .jobTitle(app.getJob().getTitle())
                 .company(app.getJob().getCompany())

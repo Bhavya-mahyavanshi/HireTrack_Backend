@@ -2,6 +2,7 @@ package com.HireTrack.controller;
 
 import com.HireTrack.dto.request.SkillRequest;
 import com.HireTrack.dto.response.SkillMatchResponse;
+import com.HireTrack.dto.response.SkillResponse;
 import com.HireTrack.exception.ResourceNotFoundException;
 import com.HireTrack.exception.UnauthorizedException;
 import com.HireTrack.model.JobApplication;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/skills")
@@ -34,14 +36,18 @@ public class SkillController {
     private final SkillMatcherService skillMatcherService;
 
     @GetMapping
-    public ResponseEntity<List<UserSkill>> getSkills(
+    public ResponseEntity<List<SkillResponse>> getSkills(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
-        return ResponseEntity.ok(skillRepository.findByUser(user));
+        List<SkillResponse> skills = skillRepository.findByUser(user)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(skills);
     }
 
     @PostMapping
-    public ResponseEntity<UserSkill> addSkill(
+    public ResponseEntity<SkillResponse> addSkill(
             @Valid @RequestBody SkillRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
@@ -49,10 +55,11 @@ public class SkillController {
         UserSkill skill = UserSkill.builder()
                 .user(user)
                 .skillName(req.getSkillName())
-                .Proficiency(req.getProficiency())
+                .proficiency(req.getProficiency())
                 .build();
 
-        return ResponseEntity.ok(skillRepository.save(skill));
+        UserSkill saved = skillRepository.save(skill);
+        return ResponseEntity.ok(toResponse(saved));
     }
 
     @DeleteMapping("/{id}")
@@ -100,6 +107,14 @@ public class SkillController {
                 .matchedSkills(matched)
                 .missingSkills(missing)
                 .build());
+    }
+
+    private SkillResponse toResponse(UserSkill skill) {
+        return SkillResponse.builder()
+                .id(skill.getId())
+                .skillName(skill.getSkillName())
+                .proficiency(skill.getProficiency())
+                .build();
     }
 
     private User getUser(UserDetails userDetails) {

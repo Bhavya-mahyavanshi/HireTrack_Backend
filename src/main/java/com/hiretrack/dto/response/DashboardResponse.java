@@ -17,5 +17,5 @@ public class DashboardResponse {
     private Integer totalOffers;
     private Integer totalRejected;
     private List<StatusCount> statusBreakdown;
-    private List<ApplicationResponce> upcomingFollowUps;
+    private List<ApplicationResponse> upcomingFollowUps;
 }

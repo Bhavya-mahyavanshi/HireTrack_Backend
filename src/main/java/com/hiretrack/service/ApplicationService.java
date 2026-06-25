@@ -1,7 +1,8 @@
 package com.HireTrack.service;
 
 import com.HireTrack.dto.request.ApplicationRequest;
-import com.HireTrack.dto.response.ApplicationResponce;
+import com.HireTrack.dto.response.ApplicationResponse;
+import com.HireTrack.exception.ConflictException;
 import com.HireTrack.exception.ResourceNotFoundException;
 import com.HireTrack.exception.UnauthorizedException;
 import com.HireTrack.model.*;
@@ -16,26 +17,31 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
-    
+
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final SkillMatcherService skillMatcherService;
 
-    public List<ApplicationResponce> getAllApplication(User user) {
+    public List<ApplicationResponse> getAllApplication(User user) {
         return applicationRepository.findByUser(user)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    public ApplicationResponce getApplicationById(Long id, User user) {
+    public ApplicationResponse getApplicationById(Long id, User user) {
         JobApplication app = findAndVerifyOwnership(id, user);
         return toResponse(app);
     }
 
-    public ApplicationResponce createApplication(ApplicationRequest req, User user) {
+    public ApplicationResponse createApplication(ApplicationRequest req, User user) {
         Job job = jobRepository.findById(req.getJobId())
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + req.getJobId()));
+
+        applicationRepository.findByUserAndJob(user, job).ifPresent(existing -> {
+            throw new ConflictException(
+                    "You're already tracking this application (application id " + existing.getId() + ")");
+        });
 
         JobApplication application = JobApplication.builder()
                 .user(user)
@@ -54,8 +60,8 @@ public class ApplicationService {
         saved = applicationRepository.findById(saved.getId()).orElse(saved);
         return toResponse(saved);
     }
-    
-    public ApplicationResponce updateApplication(Long id, ApplicationRequest req, User user) {
+
+    public ApplicationResponse updateApplication(Long id, ApplicationRequest req, User user) {
         JobApplication app = findAndVerifyOwnership(id, user);
 
         if (req.getStatus() != null)
@@ -71,7 +77,7 @@ public class ApplicationService {
 
         return toResponse(applicationRepository.save(app));
     }
-    
+
     public void deleteApplication(long id, User user) {
         JobApplication app = findAndVerifyOwnership(id, user);
         applicationRepository.delete(app);
@@ -87,14 +93,14 @@ public class ApplicationService {
 
         return app;
     }
-    
-    private ApplicationResponce toResponse(JobApplication app) {
+
+    private ApplicationResponse toResponse(JobApplication app) {
         Integer matchScore = null;
         if (app.getSkillMatch() != null) {
             matchScore = app.getSkillMatch().getMatchScore();
         }
 
-        return ApplicationResponce.builder()
+        return ApplicationResponse.builder()
                 .id(app.getId())
                 .jobTitle(app.getJob().getTitle())
                 .company(app.getJob().getCompany())

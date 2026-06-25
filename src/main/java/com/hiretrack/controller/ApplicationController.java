@@ -1,7 +1,7 @@
 package com.HireTrack.controller;
 
 import com.HireTrack.dto.request.ApplicationRequest;
-import com.HireTrack.dto.response.ApplicationResponce;
+import com.HireTrack.dto.response.ApplicationResponse;
 import com.HireTrack.model.User;
 import com.HireTrack.repository.UserRepository;
 import com.HireTrack.service.ApplicationService;
@@ -23,14 +23,14 @@ public class ApplicationController {
     private final UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<List<ApplicationResponce>> getAll(
+    public ResponseEntity<List<ApplicationResponse>> getAll(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
         return ResponseEntity.ok(applicationService.getAllApplication(user));
     }
 
     @PostMapping
-    public ResponseEntity<ApplicationResponce> create(
+    public ResponseEntity<ApplicationResponse> create(
             @Valid @RequestBody ApplicationRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
@@ -38,7 +38,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApplicationResponce> getById(
+    public ResponseEntity<ApplicationResponse> getById(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
@@ -46,7 +46,7 @@ public class ApplicationController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApplicationResponce> update (
+    public ResponseEntity<ApplicationResponse> update (
         @PathVariable Long id,
         @RequestBody ApplicationRequest req,
         @AuthenticationPrincipal UserDetails userDetails) {

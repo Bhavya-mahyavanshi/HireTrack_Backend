@@ -1,6 +1,6 @@
 package com.HireTrack.controller;
 
-import com.HireTrack.dto.response.ApplicationResponce;
+import com.HireTrack.dto.response.ApplicationResponse;
 import com.HireTrack.dto.response.DashboardResponse;
 import com.HireTrack.dto.response.StatusCount;
 import com.HireTrack.model.User;
@@ -37,7 +37,7 @@ public class DashboardController {
     }
 
     @GetMapping("/upcoming")
-    public ResponseEntity<List<ApplicationResponce>> getUpcoming(
+    public ResponseEntity<List<ApplicationResponse>> getUpcoming(
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getUser(userDetails);
         return ResponseEntity.ok(dashboardService.getUpcoming(user));

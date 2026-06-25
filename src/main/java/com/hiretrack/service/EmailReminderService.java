@@ -15,14 +15,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class EmailReminderService {
-    
+
     private final JavaMailSender mailSender;
     private final ApplicationRepository applicationRepository;
 
     public void sendFollowUpReminders() {
         LocalDate today = LocalDate.now();
-        List<JobApplication> dueApplications = applicationRepository.findByFollowUpDateBefore(today.plusDays(1));
-        
+        List<JobApplication> dueApplications = applicationRepository.findByFollowUpDate(today);
+
         int count = 0;
         for (JobApplication app : dueApplications) {
             try {
@@ -42,20 +42,20 @@ public class EmailReminderService {
 
     private String buildReminderText(JobApplication app) {
         return String.format(
-            "Hi %s,\n\n" +
-            "This is a reminder from HireTrack to follow up on your job application.\n\n" +
-            "Company:   %s\n" +
-            "Role:      %s\n" +
-            "Status:    %s\n" +
-            "Follow-up date: %s\n\n" +
-            "Log in to HireTrack to update your application status.\n\n" +
-            "Good luck!\n" +
-            "- The HireTrack Team",
-            app.getUser().getName(),
-            app.getJob().getCompany(),
-            app.getJob().getTitle(),
-            app.getStatus(),
-            app.getFollowUpDate()
+                "Hi %s,\n\n" +
+                        "This is a reminder from HireTrack to follow up on your job application.\n\n" +
+                        "Company:   %s\n" +
+                        "Role:      %s\n" +
+                        "Status:    %s\n" +
+                        "Follow-up date: %s\n\n" +
+                        "Log in to HireTrack to update your application status.\n\n" +
+                        "Good luck!\n" +
+                        "- The HireTrack Team",
+                app.getUser().getName(),
+                app.getJob().getCompany(),
+                app.getJob().getTitle(),
+                app.getStatus(),
+                app.getFollowUpDate()
         );
     }
 }

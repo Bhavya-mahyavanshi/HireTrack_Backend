@@ -1,6 +1,7 @@
 package com.HireTrack.service;
 
 import com.HireTrack.dto.response.JobResponse;
+import com.HireTrack.exception.ScrapeFailedException;
 import com.HireTrack.model.Job;
 import com.HireTrack.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class JobScraperService {
                     .get();
         } catch (IOException e) {
             log.error("Failed to scrape URL: {}", url, e);
-            throw new RuntimeException("Failed to fetch job posting. Please check the URL and try again.");
+            throw new ScrapeFailedException("Failed to fetch job posting. Please check the URL and try again.");
         }
 
         String title = extractTitle(doc);
@@ -72,7 +73,7 @@ public class JobScraperService {
                 .build();
 
         Job saved = jobRepository.save(job);
-        log.info("Scarped and saved job: {} at {}", title, company);
+        log.info("Scraped and saved job: {} at {}", title, company);
         return toResponse(saved);
     }
 
@@ -94,7 +95,7 @@ public class JobScraperService {
         Element h1 = doc.selectFirst("h1");
         return h1 != null ? h1.text().trim() : "Unknown Title";
     }
-    
+
     private String extractCompany(Document doc) {
         String[] selectors = {
                 "[data-testid='inlineHeader-companyName']",
@@ -110,7 +111,7 @@ public class JobScraperService {
         }
         return "Unknown Company";
     }
-    
+
     private String extractLocation(Document doc) {
         String[] selectors = {
                 "[data-testid='job-location']", "[data-testid='inlineHeader-companyLocation']",
@@ -125,7 +126,7 @@ public class JobScraperService {
 
         return "";
     }
-    
+
     private String extractDescription(Document doc) {
         String[] selectors = {
                 "[data-testid='jobDescriptionText']",
@@ -142,7 +143,7 @@ public class JobScraperService {
 
         return doc.body() != null ? doc.body().text() : "";
     }
-    
+
     String extractSkills(String text) {
         String lowerText = text.toLowerCase();
         List<String> found = new ArrayList<>();
@@ -174,7 +175,7 @@ public class JobScraperService {
 
         return min > 0 ? new int[] { min, max } : null;
     }
-    
+
     private int parseSalary(String raw) {
         String cleaned = raw.replace(",", "").trim();
         int val = Integer.parseInt(cleaned);
