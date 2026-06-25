@@ -1,4 +1,4 @@
-package com.HireTrack.exception;
+package com.hiretrack.exception;
 
 import lombok.extern.slf4j.*;
 import org.springframework.http.HttpStatus;

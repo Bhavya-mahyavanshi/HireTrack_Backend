@@ -1,4 +1,4 @@
-package com.HireTrack.dto.response;
+package com.hiretrack.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
-package com.HireTrack.config;
+package com.hiretrack.config;
 
-import com.HireTrack.security.JwtAuthFilter;
-import com.HireTrack.security.UserDetailsServiceImpl;
+import com.hiretrack.security.JwtAuthFilter;
+import com.hiretrack.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

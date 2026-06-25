@@ -1,4 +1,4 @@
-package com.HireTrack.exception;
+package com.hiretrack.exception;
 
 public class ConflictException extends RuntimeException {
     public ConflictException(String message) {

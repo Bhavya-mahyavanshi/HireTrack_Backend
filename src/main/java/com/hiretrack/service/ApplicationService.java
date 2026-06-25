@@ -1,13 +1,13 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.dto.request.ApplicationRequest;
-import com.HireTrack.dto.response.ApplicationResponse;
-import com.HireTrack.exception.ConflictException;
-import com.HireTrack.exception.ResourceNotFoundException;
-import com.HireTrack.exception.UnauthorizedException;
-import com.HireTrack.model.*;
-import com.HireTrack.repository.ApplicationRepository;
-import com.HireTrack.repository.JobRepository;
+import com.hiretrack.dto.request.ApplicationRequest;
+import com.hiretrack.dto.response.ApplicationResponse;
+import com.hiretrack.exception.ConflictException;
+import com.hiretrack.exception.ResourceNotFoundException;
+import com.hiretrack.exception.UnauthorizedException;
+import com.hiretrack.model.*;
+import com.hiretrack.repository.ApplicationRepository;
+import com.hiretrack.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

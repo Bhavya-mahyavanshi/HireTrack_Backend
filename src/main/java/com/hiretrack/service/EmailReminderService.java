@@ -1,7 +1,7 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.model.JobApplication;
-import com.HireTrack.repository.ApplicationRepository;
+import com.hiretrack.model.JobApplication;
+import com.hiretrack.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -28,7 +28,7 @@ public class EmailReminderService {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setTo(app.getUser().getEmail());
-                message.setSubject("HireTrack: Follow up on " + app.getJob().getCompany());
+                message.setSubject("hiretrack: Follow up on " + app.getJob().getCompany());
                 message.setText(buildReminderText(app));
                 mailSender.send(message);
                 count++;
@@ -37,20 +37,20 @@ public class EmailReminderService {
                         app.getId(), e.getMessage());
             }
         }
-        log.info("HireTrack Scheduler: sent {} follow-up reminder(s)", count);
+        log.info("hiretrack Scheduler: sent {} follow-up reminder(s)", count);
     }
 
     private String buildReminderText(JobApplication app) {
         return String.format(
                 "Hi %s,\n\n" +
-                        "This is a reminder from HireTrack to follow up on your job application.\n\n" +
+                        "This is a reminder from hiretrack to follow up on your job application.\n\n" +
                         "Company:   %s\n" +
                         "Role:      %s\n" +
                         "Status:    %s\n" +
                         "Follow-up date: %s\n\n" +
-                        "Log in to HireTrack to update your application status.\n\n" +
+                        "Log in to hiretrack to update your application status.\n\n" +
                         "Good luck!\n" +
-                        "- The HireTrack Team",
+                        "- The hiretrack Team",
                 app.getUser().getName(),
                 app.getJob().getCompany(),
                 app.getJob().getTitle(),

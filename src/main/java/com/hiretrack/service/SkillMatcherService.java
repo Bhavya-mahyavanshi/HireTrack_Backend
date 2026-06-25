@@ -1,10 +1,10 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.model.JobApplication;
-import com.HireTrack.model.SkillMatch;
-import com.HireTrack.model.UserSkill;
-import com.HireTrack.repository.SkillMatchRepository;
-import com.HireTrack.repository.SkillRepository;
+import com.hiretrack.model.JobApplication;
+import com.hiretrack.model.SkillMatch;
+import com.hiretrack.model.UserSkill;
+import com.hiretrack.repository.SkillMatchRepository;
+import com.hiretrack.repository.SkillRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
-package com.HireTrack.dto.request;
+package com.hiretrack.dto.request;
 
-import com.HireTrack.model.ApplicationStatus;
+import com.hiretrack.model.ApplicationStatus;
 import lombok.Data;
 
 import java.time.LocalDate;

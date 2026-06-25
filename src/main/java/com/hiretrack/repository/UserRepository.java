@@ -1,6 +1,6 @@
-package com.HireTrack.repository;
+package com.hiretrack.repository;
 
-import com.HireTrack.model.User;
+import com.hiretrack.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

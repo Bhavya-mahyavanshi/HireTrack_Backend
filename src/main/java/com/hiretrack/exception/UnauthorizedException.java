@@ -1,4 +1,4 @@
-package com.HireTrack.exception;
+package com.hiretrack.exception;
 
 public class UnauthorizedException extends RuntimeException {
     public UnauthorizedException(String message) {

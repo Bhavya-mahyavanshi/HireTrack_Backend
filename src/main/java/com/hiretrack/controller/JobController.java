@@ -1,11 +1,11 @@
-package com.HireTrack.controller;
+package com.hiretrack.controller;
 
-import com.HireTrack.dto.request.ScrapeRequest;
-import com.HireTrack.dto.response.JobResponse;
-import com.HireTrack.exception.ResourceNotFoundException;
-import com.HireTrack.model.Job;
-import com.HireTrack.repository.JobRepository;
-import com.HireTrack.service.JobScraperService;
+import com.hiretrack.dto.request.ScrapeRequest;
+import com.hiretrack.dto.response.JobResponse;
+import com.hiretrack.exception.ResourceNotFoundException;
+import com.hiretrack.model.Job;
+import com.hiretrack.repository.JobRepository;
+import com.hiretrack.service.JobScraperService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

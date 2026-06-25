@@ -1,4 +1,4 @@
-package com.HireTrack.exception;
+package com.hiretrack.exception;
 
 public class ScrapeFailedException extends RuntimeException {
     public ScrapeFailedException(String message) {

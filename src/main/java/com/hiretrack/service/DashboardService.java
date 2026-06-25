@@ -1,12 +1,12 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.dto.response.ApplicationResponse;
-import com.HireTrack.dto.response.DashboardResponse;
-import com.HireTrack.dto.response.StatusCount;
-import com.HireTrack.model.ApplicationStatus;
-import com.HireTrack.model.JobApplication;
-import com.HireTrack.model.User;
-import com.HireTrack.repository.ApplicationRepository;
+import com.hiretrack.dto.response.ApplicationResponse;
+import com.hiretrack.dto.response.DashboardResponse;
+import com.hiretrack.dto.response.StatusCount;
+import com.hiretrack.model.ApplicationStatus;
+import com.hiretrack.model.JobApplication;
+import com.hiretrack.model.User;
+import com.hiretrack.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

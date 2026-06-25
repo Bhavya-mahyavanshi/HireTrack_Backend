@@ -10,7 +10,7 @@
 		<relativePath/>
 	</parent>
 
-	<groupId>com.HireTrack</groupId>
+	<groupId>com.hiretrack</groupId>
 	<artifactId>HireTrack</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>HireTrack</name>

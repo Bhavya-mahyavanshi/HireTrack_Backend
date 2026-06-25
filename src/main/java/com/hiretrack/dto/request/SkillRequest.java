@@ -1,6 +1,6 @@
-package com.HireTrack.dto.request;
+package com.hiretrack.dto.request;
 
-import com.HireTrack.model.UserSkill;
+import com.hiretrack.model.UserSkill;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

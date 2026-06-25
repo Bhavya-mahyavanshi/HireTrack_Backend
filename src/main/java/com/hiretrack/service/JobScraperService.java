@@ -1,9 +1,9 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.dto.response.JobResponse;
-import com.HireTrack.exception.ScrapeFailedException;
-import com.HireTrack.model.Job;
-import com.HireTrack.repository.JobRepository;
+import com.hiretrack.dto.response.JobResponse;
+import com.hiretrack.exception.ScrapeFailedException;
+import com.hiretrack.model.Job;
+import com.hiretrack.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;

@@ -1,12 +1,12 @@
-package com.HireTrack.service;
+package com.hiretrack.service;
 
-import com.HireTrack.dto.request.LoginRequest;
-import com.HireTrack.dto.request.RegisterRequest;
-import com.HireTrack.dto.response.AuthResponse;
-import com.HireTrack.exception.UnauthorizedException;
-import com.HireTrack.model.User;
-import com.HireTrack.repository.UserRepository;
-import com.HireTrack.security.JwtTokenProvider;
+import com.hiretrack.dto.request.LoginRequest;
+import com.hiretrack.dto.request.RegisterRequest;
+import com.hiretrack.dto.response.AuthResponse;
+import com.hiretrack.exception.UnauthorizedException;
+import com.hiretrack.model.User;
+import com.hiretrack.repository.UserRepository;
+import com.hiretrack.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

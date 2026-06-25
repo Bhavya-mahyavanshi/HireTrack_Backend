@@ -1,6 +1,6 @@
-package com.HireTrack.dto.response;
+package com.hiretrack.dto.response;
 
-import com.HireTrack.model.UserSkill;
+import com.hiretrack.model.UserSkill;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

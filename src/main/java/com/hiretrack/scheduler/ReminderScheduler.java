@@ -1,6 +1,6 @@
-package com.HireTrack.scheduler;
+package com.hiretrack.scheduler;
 
-import com.HireTrack.service.EmailReminderService;
+import com.hiretrack.service.EmailReminderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

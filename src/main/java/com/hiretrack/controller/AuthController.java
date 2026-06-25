@@ -1,9 +1,9 @@
-package com.HireTrack.controller;
+package com.hiretrack.controller;
 
-import com.HireTrack.dto.request.LoginRequest;
-import com.HireTrack.dto.request.RegisterRequest;
-import com.HireTrack.dto.response.AuthResponse;
-import com.HireTrack.service.AuthService;
+import com.hiretrack.dto.request.LoginRequest;
+import com.hiretrack.dto.request.RegisterRequest;
+import com.hiretrack.dto.response.AuthResponse;
+import com.hiretrack.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

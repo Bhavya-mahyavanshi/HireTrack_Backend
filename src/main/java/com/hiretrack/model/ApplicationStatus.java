@@ -1,4 +1,4 @@
-package com.HireTrack.model;
+package com.hiretrack.model;
 
 public enum ApplicationStatus {
     SAVED,

@@ -1,11 +1,11 @@
-package com.HireTrack.controller;
+package com.hiretrack.controller;
 
-import com.HireTrack.dto.response.ApplicationResponse;
-import com.HireTrack.dto.response.DashboardResponse;
-import com.HireTrack.dto.response.StatusCount;
-import com.HireTrack.model.User;
-import com.HireTrack.repository.UserRepository;
-import com.HireTrack.service.DashboardService;
+import com.hiretrack.dto.response.ApplicationResponse;
+import com.hiretrack.dto.response.DashboardResponse;
+import com.hiretrack.dto.response.StatusCount;
+import com.hiretrack.model.User;
+import com.hiretrack.repository.UserRepository;
+import com.hiretrack.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
