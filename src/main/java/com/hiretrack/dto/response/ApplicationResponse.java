@@ -23,4 +23,5 @@ public class ApplicationResponse {
     private String notes;
     private String resumeVersion;
     private Integer matchScore;
+    private String url;
 }

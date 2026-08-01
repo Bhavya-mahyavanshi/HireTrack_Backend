@@ -111,6 +111,7 @@ public class ApplicationService {
                 .notes(app.getNotes())
                 .resumeVersion(app.getResumeVersion())
                 .matchScore(matchScore)
+                .url(app.getJob().getUrl())
                 .build();
     }
 }
