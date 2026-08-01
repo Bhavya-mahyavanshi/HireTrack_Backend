@@ -1,5 +1,6 @@
 package com.hiretrack.controller;
 
+import com.hiretrack.dto.request.ManualJobRequest;
 import com.hiretrack.dto.request.ScrapeRequest;
 import com.hiretrack.dto.response.JobResponse;
 import com.hiretrack.exception.ResourceNotFoundException;
@@ -37,6 +38,38 @@ public class JobController {
                 .salaryMax(job.getSalaryMax())
                 .requiredSkills(job.getRequiredSkills())
                 .url(job.getUrl())
+                .build());
+    }
+
+    // Used by the frontend's manual-entry fallback — fired when scraping
+    // fails outright, or succeeds but returns placeholder "Unknown Title" /
+    // "Unknown Company" values (Indeed/LinkedIn block scraping; some
+    // Greenhouse/Lever pages have markup our selectors miss). Skips the
+    // scraper entirely and saves exactly what the user typed.
+    @PostMapping("/manual")
+    public ResponseEntity<JobResponse> createManual(@Valid @RequestBody ManualJobRequest req) {
+        Job job = Job.builder()
+                .url(req.getUrl() != null && !req.getUrl().isBlank()
+                        ? req.getUrl()
+                        : "manual-entry-" + System.currentTimeMillis())
+                .title(req.getTitle())
+                .company(req.getCompany())
+                .location(req.getLocation() != null ? req.getLocation() : "")
+                .description("")
+                .requiredSkills("")
+                .build();
+
+        Job saved = jobRepository.save(job);
+
+        return ResponseEntity.ok(JobResponse.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .company(saved.getCompany())
+                .location(saved.getLocation())
+                .salaryMin(null)
+                .salaryMax(null)
+                .requiredSkills("")
+                .url(saved.getUrl())
                 .build());
     }
 }
