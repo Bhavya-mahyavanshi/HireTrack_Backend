@@ -37,10 +37,21 @@ public class JobScraperService {
     @Value("${rapidapi.key:}")
     private String rapidApiKey;
 
-    private static final Set<String> BLOCKED_DOMAINS = Set.of(
+    // Domains where JSearch (via Google for Jobs) has decent coverage —
+    // still worth attempting the API call.
+    private static final Set<String> API_FALLBACK_DOMAINS = Set.of(
             "indeed.com", "ca.indeed.com", "www.indeed.com",
-            "linkedin.com", "www.linkedin.com",
             "glassdoor.com", "www.glassdoor.ca", "www.glassdoor.com"
+    );
+
+    // LinkedIn deliberately excludes most listings from Google for Jobs'
+    // structured data, which is what JSearch indexes against — so even a
+    // correctly configured API key returns "not found" for the large
+    // majority of LinkedIn URLs. Attempting the call just wastes ~10s and
+    // an API quota unit for a near-guaranteed failure. Route straight to
+    // an honest message and manual entry instead.
+    private static final Set<String> LINKEDIN_DOMAINS = Set.of(
+            "linkedin.com", "www.linkedin.com"
     );
 
     private static final Set<String> TECH_KEYWORDS = new LinkedHashSet<>(Arrays.asList(
@@ -67,7 +78,16 @@ public class JobScraperService {
 
         String domain = extractDomain(url);
 
-        if (BLOCKED_DOMAINS.contains(domain)) {
+        if (LINKEDIN_DOMAINS.contains(domain)) {
+            throw new ScrapeFailedException(
+                    "LinkedIn doesn't allow automated fetching for the vast majority of its listings — " +
+                            "this isn't something we can reliably work around. Enter the job details manually below, " +
+                            "or check if the company also posted this role on their own careers page or Greenhouse/Lever, " +
+                            "which usually works."
+            );
+        }
+
+        if (API_FALLBACK_DOMAINS.contains(domain)) {
             return scrapeViaJSearch(url, domain);
         }
 
@@ -118,11 +138,13 @@ public class JobScraperService {
         return toResponse(jobRepository.save(job));
     }
 
-    // ─── JSearch API — Indeed and LinkedIn ───────────────────────────────────
+    // ─── JSearch API — Indeed and Glassdoor only ──────────────────────────────
     // Free tier: rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch
     // IMPORTANT: you must click "Subscribe to Test" on RapidAPI even for
     // the free plan — having a key is not enough, subscription is separate.
-    // Add to application.properties: rapidapi.key=YOUR_KEY_HERE
+    // On Render: set RAPIDAPI_KEY as an environment variable in the service's
+    // Environment tab — local .env / application.properties values do NOT
+    // carry over to a deployed instance automatically.
 
     private JobResponse scrapeViaJSearch(String url, String domain) {
         if (rapidApiKey == null || rapidApiKey.isBlank()) {
@@ -135,16 +157,6 @@ public class JobScraperService {
         }
 
         try {
-            // Extract the job key from the URL to build a targeted search query.
-            // JSearch's /search endpoint is more reliable than /job-details
-            // because /job-details uses JSearch's own internal ID format
-            // (not Indeed's jk parameter directly).
-            String jk = extractQueryParam(url, "jk");
-            String searchQuery = (jk != null)
-                    ? "jobkey:" + jk                  // Indeed-specific search hint
-                    : URLEncoder.encode(url, StandardCharsets.UTF_8);
-
-            // Use /search with the job URL so JSearch can find the exact listing
             String apiUrl = "https://jsearch.p.rapidapi.com/search?query=" +
                     URLEncoder.encode(url, StandardCharsets.UTF_8) +
                     "&num_pages=1&page=1";
@@ -342,18 +354,6 @@ public class JobScraperService {
             String host = URI.create(url).getHost();
             return host != null ? host.toLowerCase() : "";
         } catch (Exception e) { return ""; }
-    }
-
-    private String extractQueryParam(String url, String param) {
-        try {
-            String query = URI.create(url).getQuery();
-            if (query == null) return null;
-            for (String kv : query.split("&")) {
-                String[] parts = kv.split("=", 2);
-                if (parts.length == 2 && parts[0].equals(param)) return parts[1];
-            }
-        } catch (Exception ignored) {}
-        return null;
     }
 
     private int parseSalary(String raw) {
